@@ -14,7 +14,7 @@ jobs:
       - name: Unzip and Organize
         run: |
           unzip LiveStreamApp.zip
-          # نقل ملفات المشروع للرئيسية إذا كانت داخل مجلد فرعي
+          # نقل الملفات للرئيسية إذا كانت داخل مجلد فرعي
           find . -maxdepth 2 -name "build.gradle*" -execdir cp -r . ../ \; || true
 
       - name: Set up JDK 17
@@ -23,8 +23,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Fix Namespace Issue
+        # هذا السطر يبحث عن الـ Package Name في المانيفست ويضيفه كـ namespace في build.gradle
+        run: |
+          PACKAGE_NAME=$(grep -oP 'package="\K[^"]+' app/src/main/AndroidManifest.xml)
+          sed -i "/android {/a \    namespace '$PACKAGE_NAME'" app/build.gradle || true
+
       - name: Build with Installed Gradle
-        # هنا استخدمنا "gradle" المثبت في السيرفر بدل "./gradlew" المتعب
         run: gradle assembleDebug
 
       - name: Upload APK
