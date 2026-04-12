@@ -22,21 +22,17 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Fix AndroidX and Namespace
+      - name: Fix AndroidX, Namespace and Manifest
         run: |
-          # تفعيل AndroidX في ملف gradle.properties
           echo "android.useAndroidX=true" >> gradle.properties
           echo "android.enableJetifier=true" >> gradle.properties
           
-          # إضافة الـ Namespace تلقائياً بناءً على ملف المانيفست
+          # استخراج اسم الحزمة وحذفها من المانيفست لتجنب التعارض
           PACKAGE_NAME=$(grep -oP 'package="\K[^"]+' app/src/main/AndroidManifest.xml)
+          sed -i 's/package="[^"]*"//g' app/src/main/AndroidManifest.xml
+          
+          # إضافة الـ namespace لملف build.gradle
           sed -i "/android {/a \    namespace '$PACKAGE_NAME'" app/build.gradle || true
 
       - name: Build with Installed Gradle
         run: gradle assembleDebug
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: LiveStream-App
-          path: "**/build/outputs/apk/debug/*.apk"
