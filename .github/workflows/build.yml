@@ -14,7 +14,6 @@ jobs:
       - name: Unzip and Organize
         run: |
           unzip LiveStreamApp.zip
-          # نقل الملفات للرئيسية إذا كانت داخل مجلد فرعي
           find . -maxdepth 2 -name "build.gradle*" -execdir cp -r . ../ \; || true
 
       - name: Set up JDK 17
@@ -23,9 +22,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Fix Namespace Issue
-        # هذا السطر يبحث عن الـ Package Name في المانيفست ويضيفه كـ namespace في build.gradle
+      - name: Fix AndroidX and Namespace
         run: |
+          # تفعيل AndroidX في ملف gradle.properties
+          echo "android.useAndroidX=true" >> gradle.properties
+          echo "android.enableJetifier=true" >> gradle.properties
+          
+          # إضافة الـ Namespace تلقائياً بناءً على ملف المانيفست
           PACKAGE_NAME=$(grep -oP 'package="\K[^"]+' app/src/main/AndroidManifest.xml)
           sed -i "/android {/a \    namespace '$PACKAGE_NAME'" app/build.gradle || true
 
