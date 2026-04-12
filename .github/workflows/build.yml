@@ -14,21 +14,18 @@ jobs:
       - name: Unzip and Organize
         run: |
           unzip LiveStreamApp.zip
-          # هذا السطر ينقل الملفات من أي مجلد فرعي إلى الواجهة الرئيسية
-          find . -maxdepth 2 -name "gradlew" -execdir cp -r . ../ \; || true
+          # نقل ملفات المشروع للرئيسية إذا كانت داخل مجلد فرعي
+          find . -maxdepth 2 -name "build.gradle*" -execdir cp -r . ../ \; || true
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: gradle
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: Build with Gradle
-        run: ./gradlew assembleDebug
+      - name: Build with Installed Gradle
+        # هنا استخدمنا "gradle" المثبت في السيرفر بدل "./gradlew" المتعب
+        run: gradle assembleDebug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
