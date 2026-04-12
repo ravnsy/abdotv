@@ -22,6 +22,12 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Setup Gradle
+        # سنستخدم إصدار 8.0 لأنه الأكثر استقراراً لمشاريع سكتشوير
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.0
+
       - name: Fix AndroidX, Namespace and Manifest
         run: |
           echo "android.useAndroidX=true" >> gradle.properties
@@ -34,5 +40,11 @@ jobs:
           # إضافة الـ namespace لملف build.gradle
           sed -i "/android {/a \    namespace '$PACKAGE_NAME'" app/build.gradle || true
 
-      - name: Build with Installed Gradle
+      - name: Build APK
         run: gradle assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: LiveStream-App
+          path: "**/build/outputs/apk/debug/*.apk"
